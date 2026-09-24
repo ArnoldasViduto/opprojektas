@@ -33,6 +33,32 @@ void apskaiciuoti(studentas& A)
         A.med = visi[n / 2];
 }
 
+int skaitytiPazymi(const std::string& prompt)
+{
+    using namespace std;
+    int n;
+    while (true) {
+        cout << prompt;
+        if (cin >> n && n >= 1 && n <= 10) return n;
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Klaida: pazymys turi buti sveikas skaicius nuo 1 iki 10.\n";
+    }
+}
+
+int skaitytiTeigiamaSkaiciu(const std::string& prompt)
+{
+    using namespace std;
+    int n;
+    while (true) {
+        cout << prompt;
+        if (cin >> n && n > 0) return n;
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Klaida: iveskite teigiama sveika skaiciu.\n";
+    }
+}
+
 bool skaitytiIsFailo(std::vector<studentas>& studentai)
 {
     using namespace std;
@@ -100,17 +126,21 @@ void ivestiRankiniu(std::vector<studentas>& studentai)
 
     char darPaz;
     do {
-        int n;
-        cout << "Namu darbo pazymys: ";
-        cin >> n;
+        int n = skaitytiPazymi("Namu darbo pazymys: ");
         A.paz.push_back(n);
 
         cout << "Ar yra dar pazymiu? (t/n): ";
         cin >> darPaz;
+        while (darPaz != 't' && darPaz != 'T' &&
+               darPaz != 'n' && darPaz != 'N') {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Klaida: atsakykite t arba n: ";
+            cin >> darPaz;
+        }
     } while (darPaz == 't' || darPaz == 'T');
 
-    cout << "Egzaminas: ";
-    cin >> A.egz;
+    A.egz = skaitytiPazymi("Egzaminas: ");
 
     apskaiciuoti(A);
     studentai.push_back(A);
@@ -120,11 +150,8 @@ void generuotiAtsitiktinai(std::vector<studentas>& studentai)
 {
     using namespace std;
 
-    int kiek, ndKiek;
-    cout << "Kiek studentu generuoti? ";
-    cin >> kiek;
-    cout << "Kiek namu darbu pazymiu kiekvienam? ";
-    cin >> ndKiek;
+    int kiek = skaitytiTeigiamaSkaiciu("Kiek studentu generuoti? ");
+    int ndKiek = skaitytiTeigiamaSkaiciu("Kiek namu darbu pazymiu kiekvienam? ");
 
     for (int i = 0; i < kiek; i++) {
         studentas A;
@@ -214,6 +241,12 @@ int main()
             ivestiRankiniu(studentai);
             cout << "Ar ivesti dar viena studenta? (t/n): ";
             cin >> dar;
+            while (dar != 't' && dar != 'T' && dar != 'n' && dar != 'N') {
+                cin.clear();
+                cin.ignore(10000, '\n');
+                cout << "Klaida: atsakykite t arba n: ";
+                cin >> dar;
+            }
         } while (dar == 't' || dar == 'T');
     }
     else if (pasirinkimas == 3) {
