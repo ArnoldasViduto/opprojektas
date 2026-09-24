@@ -37,7 +37,7 @@ void skaitytiIsFailo(std::vector<studentas>& studentai)
 {
     using namespace std;
 
-    ifstream f("studentai10000.txt");
+    ifstream f("kursiokai.txt");
 
     string antraste;
     getline(f, antraste);
