@@ -149,6 +149,19 @@ void rodytiRezultatus(std::vector<studentas>& studentai)
     cout << "Vidurki (v), mediana (m) ar abu (a)? ";
     cin >> pasirinkimas;
 
+    while (pasirinkimas != 'v' && pasirinkimas != 'V' &&
+           pasirinkimas != 'm' && pasirinkimas != 'M' &&
+           pasirinkimas != 'a' && pasirinkimas != 'A') {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Klaida: pasirinkimas turi buti v, m arba a. Bandykite dar karta: ";
+        cin >> pasirinkimas;
+    }
+
+    if (pasirinkimas == 'V') pasirinkimas = 'v';
+    if (pasirinkimas == 'M') pasirinkimas = 'm';
+    if (pasirinkimas == 'A') pasirinkimas = 'a';
+
     cout << left << setw(16) << "Pavarde" << setw(16) << "Vardas";
     if (pasirinkimas == 'v')
         cout << "Galutinis (Vid.)\n";
