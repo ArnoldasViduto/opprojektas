@@ -33,31 +33,58 @@ void apskaiciuoti(studentas& A)
         A.med = visi[n / 2];
 }
 
-void skaitytiIsFailo(std::vector<studentas>& studentai)
+bool skaitytiIsFailo(std::vector<studentas>& studentai)
 {
     using namespace std;
 
     ifstream f("kursiokai.txt");
+    if (!f.is_open()) {
+        cout << "Klaida: nepavyko atidaryti failo kursiokai.txt\n";
+        return false;
+    }
 
     string antraste;
-    getline(f, antraste);
+    if (!getline(f, antraste)) {
+        cout << "Klaida: failas yra tuscias\n";
+        return false;
+    }
 
     istringstream is(antraste);
     string zodis;
     int stulpeliai = 0;
     while (is >> zodis) stulpeliai++;
+
+    if (stulpeliai < 4) {
+        cout << "Klaida: neteisingas failo formatas (per mazai stulpeliu)\n";
+        return false;
+    }
     int ndKiek = stulpeliai - 3;
 
     studentas A;
     while (f >> A.var >> A.pav) {
         A.paz.assign(ndKiek, 0);
-        for (int i = 0; i < ndKiek; i++)
-            f >> A.paz[i];
-        f >> A.egz;
+
+        bool ok = true;
+        for (int i = 0; i < ndKiek; i++) {
+            if (!(f >> A.paz[i])) { ok = false; break; }
+        }
+        if (ok && !(f >> A.egz)) ok = false;
+
+        if (!ok) {
+            cout << "Klaida: neteisingas failo formatas (truksta duomenu)\n";
+            return false;
+        }
 
         apskaiciuoti(A);
         studentai.push_back(A);
     }
+
+    if (studentai.empty()) {
+        cout << "Klaida: faile nera studentu duomenu\n";
+        return false;
+    }
+
+    return true;
 }
 
 void ivestiRankiniu(std::vector<studentas>& studentai)
@@ -159,7 +186,7 @@ int main()
     cin >> pasirinkimas;
 
     if (pasirinkimas == 1) {
-        skaitytiIsFailo(studentai);
+        if (!skaitytiIsFailo(studentai)) return 1;
     }
     else if (pasirinkimas == 2) {
         char dar;
