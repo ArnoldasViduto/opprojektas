@@ -185,6 +185,13 @@ int main()
     cout << "Pasirinkimas: ";
     cin >> pasirinkimas;
 
+    while (cin.fail() || pasirinkimas < 1 || pasirinkimas > 3) {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Klaida: pasirinkimas turi buti 1, 2 arba 3. Bandykite dar karta: ";
+        cin >> pasirinkimas;
+    }
+
     if (pasirinkimas == 1) {
         if (!skaitytiIsFailo(studentai)) return 1;
     }
