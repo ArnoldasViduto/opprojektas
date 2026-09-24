@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 struct studentas {
     std::string var, pav;
@@ -31,70 +33,90 @@ void apskaiciuoti(studentas& A)
         A.med = visi[n / 2];
 }
 
-int main()
+void skaitytiIsFailo(std::vector<studentas>& studentai)
 {
     using namespace std;
 
-    vector<studentas> studentai;
+    ifstream f("studentai10000.txt");
 
-    char budas;
-    cout << "Duomenis skaityti is failo (f) ar ivesti rankiniu budu (r)? ";
-    cin >> budas;
+    string antraste;
+    getline(f, antraste);
 
-    if (budas == 'f') {
-        ifstream f("studentai10000.txt");
+    istringstream is(antraste);
+    string zodis;
+    int stulpeliai = 0;
+    while (is >> zodis) stulpeliai++;
+    int ndKiek = stulpeliai - 3;
 
-        string antraste;
-        getline(f, antraste);
+    studentas A;
+    while (f >> A.var >> A.pav) {
+        A.paz.assign(ndKiek, 0);
+        for (int i = 0; i < ndKiek; i++)
+            f >> A.paz[i];
+        f >> A.egz;
 
-        istringstream is(antraste);
-        string zodis;
-        int stulpeliai = 0;
-        while (is >> zodis) stulpeliai++;
-        int ndKiek = stulpeliai - 3;
+        apskaiciuoti(A);
+        studentai.push_back(A);
+    }
+}
 
+void ivestiRankiniu(std::vector<studentas>& studentai)
+{
+    using namespace std;
+
+    studentas A;
+
+    cout << "Vardas: ";
+    cin >> A.var;
+    cout << "Pavarde: ";
+    cin >> A.pav;
+
+    char darPaz;
+    do {
+        int n;
+        cout << "Namu darbo pazymys: ";
+        cin >> n;
+        A.paz.push_back(n);
+
+        cout << "Ar yra dar pazymiu? (t/n): ";
+        cin >> darPaz;
+    } while (darPaz == 't' || darPaz == 'T');
+
+    cout << "Egzaminas: ";
+    cin >> A.egz;
+
+    apskaiciuoti(A);
+    studentai.push_back(A);
+}
+
+void generuotiAtsitiktinai(std::vector<studentas>& studentai)
+{
+    using namespace std;
+
+    int kiek, ndKiek;
+    cout << "Kiek studentu generuoti? ";
+    cin >> kiek;
+    cout << "Kiek namu darbu pazymiu kiekvienam? ";
+    cin >> ndKiek;
+
+    for (int i = 0; i < kiek; i++) {
         studentas A;
-        while (f >> A.var >> A.pav) {
-            A.paz.assign(ndKiek, 0);
-            for (int i = 0; i < ndKiek; i++)
-                f >> A.paz[i];
-            f >> A.egz;
+        A.var = "Vardas" + to_string(studentai.size() + 1);
+        A.pav = "Pavarde" + to_string(studentai.size() + 1);
 
-            apskaiciuoti(A);
-            studentai.push_back(A);
-        }
+        for (int j = 0; j < ndKiek; j++)
+            A.paz.push_back(rand() % 10 + 1);
+
+        A.egz = rand() % 10 + 1;
+
+        apskaiciuoti(A);
+        studentai.push_back(A);
     }
-    else {
-        char dar;
-        do {
-            studentas A;
+}
 
-            cout << "Vardas: ";
-            cin >> A.var;
-            cout << "Pavarde: ";
-            cin >> A.pav;
-
-            char darPaz;
-            do {
-                int n;
-                cout << "Namu darbo pazymys: ";
-                cin >> n;
-                A.paz.push_back(n);
-
-                cout << "Ar yra dar pazymiu? (t/n): ";
-                cin >> darPaz;
-            } while (darPaz == 't' || darPaz == 'T');
-
-            cout << "Egzaminas: ";
-            cin >> A.egz;
-
-            apskaiciuoti(A);
-            studentai.push_back(A);
-
-            cout << "Ar yra dar studentu? (t/n): ";
-            cin >> dar;
-        } while (dar == 't' || dar == 'T');
-    }
+void rodytiRezultatus(std::vector<studentas>& studentai)
+{
+    using namespace std;
 
     char pasirinkimas;
     cout << "Vidurki (v), mediana (m) ar abu (a)? ";
@@ -120,6 +142,38 @@ int main()
         else
             cout << setw(16) << s.vid << s.med << "\n";
     }
+}
+
+int main()
+{
+    using namespace std;
+    srand((unsigned)time(0));
+
+    vector<studentas> studentai;
+    int pasirinkimas;
+
+    cout << "1 - skaityti is failo\n";
+    cout << "2 - ivesti rankiniu budu\n";
+    cout << "3 - generuoti atsitiktinai\n";
+    cout << "Pasirinkimas: ";
+    cin >> pasirinkimas;
+
+    if (pasirinkimas == 1) {
+        skaitytiIsFailo(studentai);
+    }
+    else if (pasirinkimas == 2) {
+        char dar;
+        do {
+            ivestiRankiniu(studentai);
+            cout << "Ar ivesti dar viena studenta? (t/n): ";
+            cin >> dar;
+        } while (dar == 't' || dar == 'T');
+    }
+    else if (pasirinkimas == 3) {
+        generuotiAtsitiktinai(studentai);
+    }
+
+    rodytiRezultatus(studentai);
 
     return 0;
 }
