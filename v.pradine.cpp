@@ -14,45 +14,86 @@ struct studentas {
     double med;
 };
 
+void apskaiciuoti(studentas& A)
+{
+    std::vector<int> visi = A.paz;
+    visi.push_back(A.egz);
+
+    int suma = 0;
+    for (int p : visi) suma += p;
+    A.vid = (double)suma / visi.size();
+
+    std::sort(visi.begin(), visi.end());
+    int n = visi.size();
+    if (n % 2 == 0)
+        A.med = (visi[n / 2 - 1] + visi[n / 2]) / 2.0;
+    else
+        A.med = visi[n / 2];
+}
+
 int main()
 {
     using namespace std;
 
-    ifstream f("studentai10000.txt");
-
-    string antraste;
-    getline(f, antraste);
-
-    istringstream is(antraste);
-    string zodis;
-    int stulpeliai = 0;
-    while (is >> zodis) stulpeliai++;
-    int ndKiek = stulpeliai - 3;
-
     vector<studentas> studentai;
-    studentas A;
 
-    while (f >> A.var >> A.pav) {
-        A.paz.assign(ndKiek, 0);
-        for (int i = 0; i < ndKiek; i++)
-            f >> A.paz[i];
-        f >> A.egz;
+    char budas;
+    cout << "Duomenis skaityti is failo (f) ar ivesti rankiniu budu (r)? ";
+    cin >> budas;
 
-        vector<int> visi = A.paz;
-        visi.push_back(A.egz);
+    if (budas == 'f') {
+        ifstream f("studentai10000.txt");
 
-        int suma = 0;
-        for (int p : visi) suma += p;
-        A.vid = (double)suma / visi.size();
+        string antraste;
+        getline(f, antraste);
 
-        sort(visi.begin(), visi.end());
-        int n = visi.size();
-        if (n % 2 == 0)
-            A.med = (visi[n / 2 - 1] + visi[n / 2]) / 2.0;
-        else
-            A.med = visi[n / 2];
+        istringstream is(antraste);
+        string zodis;
+        int stulpeliai = 0;
+        while (is >> zodis) stulpeliai++;
+        int ndKiek = stulpeliai - 3;
 
-        studentai.push_back(A);
+        studentas A;
+        while (f >> A.var >> A.pav) {
+            A.paz.assign(ndKiek, 0);
+            for (int i = 0; i < ndKiek; i++)
+                f >> A.paz[i];
+            f >> A.egz;
+
+            apskaiciuoti(A);
+            studentai.push_back(A);
+        }
+    }
+    else {
+        char dar;
+        do {
+            studentas A;
+
+            cout << "Vardas: ";
+            cin >> A.var;
+            cout << "Pavarde: ";
+            cin >> A.pav;
+
+            char darPaz;
+            do {
+                int n;
+                cout << "Namu darbo pazymys: ";
+                cin >> n;
+                A.paz.push_back(n);
+
+                cout << "Ar yra dar pazymiu? (t/n): ";
+                cin >> darPaz;
+            } while (darPaz == 't' || darPaz == 'T');
+
+            cout << "Egzaminas: ";
+            cin >> A.egz;
+
+            apskaiciuoti(A);
+            studentai.push_back(A);
+
+            cout << "Ar yra dar studentu? (t/n): ";
+            cin >> dar;
+        } while (dar == 't' || dar == 'T');
     }
 
     char pasirinkimas;
@@ -82,4 +123,3 @@ int main()
 
     return 0;
 }
-
