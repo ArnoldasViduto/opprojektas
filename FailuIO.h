@@ -3,13 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include "Studentas.h"
 
-// nuskaito studentus is failo (grazina false, jei failo atidaryti nepavyko)
-// numatomasKiekis - jei zinomas isankstinis studentu kiekis, naudojamas vektoriaus reserve()
+// Nuskaitymas i VECTOR
 bool skaitytiIsFailo(const std::string& failoVardas, std::vector<Studentas>& studentai, int numatomasKiekis = 0);
+// Nuskaitymas i LIST
+bool skaitytiIsFailo(const std::string& failoVardas, std::list<Studentas>& studentai, int numatomasKiekis = 0);
 
-// israso studentu sarasa (Pavarde, Vardas, Galutinis (Vid.)) i faila
+// Irasymas is VECTOR
 void irasytiIFaila(const std::string& failoVardas, const std::vector<Studentas>& studentai);
+// Irasymas is LIST
+void irasytiIFaila(const std::string& failoVardas, const std::list<Studentas>& studentai);
 
 #endif
