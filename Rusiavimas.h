@@ -2,19 +2,16 @@
 #define RUSIAVIMAS_H
 
 #include <vector>
+#include <list>
+#include <algorithm>
 #include "Studentas.h"
 
-// surusiuoja studentus didejimo tvarka pagal galutini vidurki (std::sort)
-void rusiuotiDidejimoTvarka(std::vector<Studentas>& studentai);
+// For Vector
+void rusiuotiVektoriu(std::vector<Studentas>& studentai, char pagal);
+void skirstytiVektoriu(std::vector<Studentas>& studentai, std::vector<Studentas>& silpni, std::vector<Studentas>& stiprus);
 
-// padalina studentus i dvi grupes pagal galutini vidurki (< 5.0 ir >= 5.0)
-// ir isvalo pradini studentai vektoriu
-void skirstytiIDvi(std::vector<Studentas>& studentai,
-                    std::vector<Studentas>& silpnesni,
-                    std::vector<Studentas>& stipresni);
-
-// surusiuoja studentus pagal naudotojo pasirinkta parametra:
-// 'v' - varda, 'p' - pavarde, 'b' - galutini bala
-void rusiuotiPagalLauka(std::vector<Studentas>& studentai, char pagal);
+// For List (Notice we use std::list)
+void rusiuotiSarasa(std::list<Studentas>& studentai, char pagal);
+void skirstytiSarasa(std::list<Studentas>& studentai, std::list<Studentas>& silpni, std::list<Studentas>& stiprus);
 
 #endif
