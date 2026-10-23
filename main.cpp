@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <list>
 #include <string>
 #include <chrono>
 #include <cstdlib>
@@ -17,7 +18,6 @@ double laikas(const high_resolution_clock::time_point& a, const high_resolution_
     return duration<double>(b - a).count();
 }
 
-// Saugus v/p/b pasirinkimo nuskaitymas su klaidos pranesimu
 char ivestiRikiavimoLauka()
 {
     string eilute;
@@ -31,93 +31,131 @@ char ivestiRikiavimoLauka()
         }
         cout << "Klaida: iveskite v, p arba b: ";
     }
-    return 'v'; // jei cin uzdarytas (EOF) - saugus variantas
+    return 'v';
+}
+
+// 1. Kriterijaus punktas: rankinio ivedimo metu isvesti objekto adresa
+void rodytiAdresa()
+{
+    Studentas A;
+    cout << "\n--- RANKINIS IVEDIMAS (Adreso demonstracija) ---\n";
+    cout << "Iveskite varda: "; cin >> A.var;
+    cout << "Iveskite pavarde: "; cin >> A.pav;
+    cout << "Iveskite egzamino pazymi: "; cin >> A.egz;
+
+    cout << "Studento objekto saugojimo atmintyje adresas: " << &A << "\n";
+    cout << "-----------------------------------------------\n\n";
+    cin.ignore(10000, '\n'); // isvalome buferi
 }
 
 int main()
 {
     srand((unsigned)time(0));
 
+    // Pirma parodome adresa (kriterijui)
+    rodytiAdresa();
+
     vector<int> dydziai = {1000, 10000, 100000, 1000000, 10000000};
     const int NDKIEK = 15;
-    const int PAKARTOJIMAI = 5; // kiek kartu testuoti kiekviena faila (vidurkiui)
+    const int PAKARTOJIMAI = 3; // Galite padidinti iki 5, jei norite tikslesnio vidurkio
 
-    // 1 etapas: failu generavimas (matuojamas tik kurimo laikas)
     cout << "=== Failu generavimas ===\n";
     for (int d : dydziai) {
         string failas = "studentai_" + to_string(d) + ".txt";
-
         auto t1 = high_resolution_clock::now();
         generuotiFaila(failas, d, NDKIEK);
         auto t2 = high_resolution_clock::now();
-
         cout << d << " irasu failo kurimo laikas: " << laikas(t1, t2) << "\n";
     }
 
     char laukas = ivestiRikiavimoLauka();
 
-    cout << "\n=== Testavimas (kiekvienas dydis kartojamas " << PAKARTOJIMAI << " kartus) ===\n";
+    // ==========================================
+    // 1 DALIS: VECTOR TESTAVIMAS
+    // ==========================================
+    cout << "\n=== TESTAVIMAS SU STD::VECTOR ===\n";
     for (int d : dydziai) {
         string failas = "studentai_" + to_string(d) + ".txt";
-        string silpnesniFailas = "vargsiukai_" + to_string(d) + ".txt";
-        string stipresniFailas = "kietiakiai_" + to_string(d) + ".txt";
+        string silpniFailas = "vargsiukai_vec_" + to_string(d) + ".txt";
+        string stiprusFailas = "kietiakiai_vec_" + to_string(d) + ".txt";
 
-        double sum_read = 0, sum_sort = 0, sum_split = 0, sum_split_total = 0;
-        double sum_sort_field = 0, sum_write_silp = 0, sum_write_stip = 0, sum_write_total = 0;
-        double sum_total = 0;
+        double sum_read = 0, sum_split = 0, sum_write = 0;
         int sekmingi = 0;
 
         for (int run = 0; run < PAKARTOJIMAI; run++) {
             vector<Studentas> studentai;
-            vector<Studentas> silpnesni, stipresni;
+            vector<Studentas> silpni, stiprus;
 
             auto t1 = high_resolution_clock::now();
-            if (!skaitytiIsFailo(failas, studentai, d)) {
-                cout << "Klaida: nepavyko nuskaityti failo " << failas << "\n";
-                break;
-            }
+            if (!skaitytiIsFailo(failas, studentai, d)) break;
             auto t2 = high_resolution_clock::now();
 
-            rusiuotiDidejimoTvarka(studentai);
+            skirstytiVektoriu(studentai, silpni, stiprus);
             auto t3 = high_resolution_clock::now();
+            
+            rusiuotiVektoriu(silpni, laukas);
+            rusiuotiVektoriu(stiprus, laukas);
 
-            skirstytiIDvi(studentai, silpnesni, stipresni);
+            irasytiIFaila(silpniFailas, silpni);
+            irasytiIFaila(stiprusFailas, stiprus);
             auto t4 = high_resolution_clock::now();
 
-            rusiuotiPagalLauka(silpnesni, laukas);
-            rusiuotiPagalLauka(stipresni, laukas);
-            auto t4b = high_resolution_clock::now();
-
-            irasytiIFaila(silpnesniFailas, silpnesni);
-            auto t5 = high_resolution_clock::now();
-
-            irasytiIFaila(stipresniFailas, stipresni);
-            auto t6 = high_resolution_clock::now();
-
-            sum_read        += laikas(t1, t2);
-            sum_sort        += laikas(t2, t3);
-            sum_split       += laikas(t3, t4);
-            sum_split_total += laikas(t2, t4);
-            sum_sort_field  += laikas(t4, t4b);
-            sum_write_silp  += laikas(t4b, t5);
-            sum_write_stip  += laikas(t5, t6);
-            sum_write_total += laikas(t4b, t6);
-            sum_total       += laikas(t1, t6);
+            sum_read += laikas(t1, t2);
+            sum_split += laikas(t2, t3);
+            sum_write += laikas(t3, t4);
             sekmingi++;
         }
 
-        if (sekmingi == 0) continue;
+        if (sekmingi > 0) {
+            cout << d << " irasu (Vector):\n";
+            cout << "  Nuskaitymas:        " << sum_read / sekmingi << " s\n";
+            cout << "  Skirstymas:         " << sum_split / sekmingi << " s\n";
+            cout << "  Rikiavimas+Irasymas:" << sum_write / sekmingi << " s\n\n";
+        }
+    }
 
-        cout << d << " irasu (vidurkis is " << sekmingi << " bandymu):\n";
-        cout << "  nuskaitymo laikas:                              " << sum_read / sekmingi << "\n";
-        cout << "  rusiavimas didejimo tvarka (std::sort):         " << sum_sort / sekmingi << "\n";
-        cout << "  dalijimas i dvi grupes:                         " << sum_split / sekmingi << "\n";
-        cout << "  rusiavimas i dvi grupes (sort + dalijimas):     " << sum_split_total / sekmingi << "\n";
-        cout << "  rusiavimas pagal pasirinkta parametra:          " << sum_sort_field / sekmingi << "\n";
-        cout << "  vargsiuku irasymas i faila:                     " << sum_write_silp / sekmingi << "\n";
-        cout << "  kietiakiu irasymas i faila:                     " << sum_write_stip / sekmingi << "\n";
-        cout << "  abieju failu irasymas (bendras):                " << sum_write_total / sekmingi << "\n";
-        cout << "  bendras testo laikas:                           " << sum_total / sekmingi << "\n\n";
+    // ==========================================
+    // 2 DALIS: LIST TESTAVIMAS
+    // ==========================================
+    cout << "=== TESTAVIMAS SU STD::LIST ===\n";
+    for (int d : dydziai) {
+        string failas = "studentai_" + to_string(d) + ".txt";
+        string silpniFailas = "vargsiukai_list_" + to_string(d) + ".txt";
+        string stiprusFailas = "kietiakiai_list_" + to_string(d) + ".txt";
+
+        double sum_read = 0, sum_split = 0, sum_write = 0;
+        int sekmingi = 0;
+
+        for (int run = 0; run < PAKARTOJIMAI; run++) {
+            list<Studentas> studentai;
+            list<Studentas> silpni, stiprus;
+
+            auto t1 = high_resolution_clock::now();
+            if (!skaitytiIsFailo(failas, studentai, d)) break;
+            auto t2 = high_resolution_clock::now();
+
+            skirstytiSarasa(studentai, silpni, stiprus);
+            auto t3 = high_resolution_clock::now();
+            
+            rusiuotiSarasa(silpni, laukas);
+            rusiuotiSarasa(stiprus, laukas);
+
+            irasytiIFaila(silpniFailas, silpni);
+            irasytiIFaila(stiprusFailas, stiprus);
+            auto t4 = high_resolution_clock::now();
+
+            sum_read += laikas(t1, t2);
+            sum_split += laikas(t2, t3);
+            sum_write += laikas(t3, t4);
+            sekmingi++;
+        }
+
+        if (sekmingi > 0) {
+            cout << d << " irasu (List):\n";
+            cout << "  Nuskaitymas:        " << sum_read / sekmingi << " s\n";
+            cout << "  Skirstymas:         " << sum_split / sekmingi << " s\n";
+            cout << "  Rikiavimas+Irasymas:" << sum_write / sekmingi << " s\n\n";
+        }
     }
 
     return 0;
